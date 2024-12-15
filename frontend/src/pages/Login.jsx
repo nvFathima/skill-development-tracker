@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import axios from 'axios';
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
 import { useForm } from "react-hook-form";
@@ -6,12 +7,21 @@ import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const user ="";
-    const { register, handleSubmit, formState: { errors }, } = useForm();
+    const { register, handleSubmit, formState: { errors }, } = useForm();  
 
-    const submitHandler = (data) => {
-        console.log("Form Submitted!", data);
-      };
-      
+    const submitHandler = async (data) => {
+        try {
+            const response = await axios.post('http://localhost:5000/api/login', data);
+            console.log("Login Successful:", response.data);
+            alert("Login Successful!");
+            localStorage.setItem('token', response.data.token); // Save the token for authentication
+            navigate('/dashboard'); // Redirect to the dashboard
+        } catch (error) {
+            console.error("Login Error:", error.response?.data || error.message);
+            alert(error.response?.data?.message || "Invalid login credentials.");
+        }
+    };
+
     const navigate = useNavigate();
     useEffect(() => {
         user && navigate("/dashboard");
