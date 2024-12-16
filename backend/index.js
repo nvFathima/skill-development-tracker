@@ -19,7 +19,7 @@ main()
 .catch(err=>console.log(err))
 
 async function main() {
-    await mongoose.connect('mongodb+srv://fathimanv627:wtD3F6EDtmv9SjMx@skill-development-track.uf7qi.mongodb.net/skill-development-tracker');
+    await mongoose.connect('mongodb+srv://<username>:<password>@skill-development-track.uf7qi.mongodb.net/<db-name>');
   
 }
 
