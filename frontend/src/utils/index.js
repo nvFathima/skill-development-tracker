@@ -52,3 +52,24 @@ export const formatDate = (date) => {
     "bg-red-600",
     "bg-green-600",
   ];
+
+  export const formatDuration = (duration) => {
+    if (!duration) return 'N/A';
+    const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+    if (!match) return 'N/A';
+    
+    const hours = (match[1] || '0').slice(0, -1);
+    const minutes = (match[2] || '0').slice(0, -1);
+    const seconds = (match[3] || '0').slice(0, -1);
+    
+    if (hours !== '0') return `${hours}:${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`;
+    return `${minutes}:${seconds.padStart(2, '0')}`;
+  };
+  
+  export const formatViews = (views) => {
+    if (!views) return '0';
+    return new Intl.NumberFormat('en-US', {
+      notation: 'compact',
+      maximumFractionDigits: 1
+    }).format(views);
+  };

@@ -1,0 +1,10 @@
+MongoDB:
+
+DB-credentials:
+username: skilltracker, password: BwFAkvlkZu9CQkY4
+
+connection-string: mongodb+srv://fathimanv627:wtD3F6EDtmv9SjMx@skill-development-track.uf7qi.mongodb.net/
+
+REACT:
+
+Use xAI's API for your system (real-time assistance)
