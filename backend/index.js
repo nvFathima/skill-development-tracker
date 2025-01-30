@@ -38,10 +38,10 @@ main()
 .catch(err=>console.log(err))
 
 async function main() {
-    await mongoose.connect('mongodb+srv://fathimanv627:wtD3F6EDtmv9SjMx@skill-development-track.uf7qi.mongodb.net/skill-development-tracker');
+    await mongoose.connect('mongodb connection string');
   
 }
 
 // Start Server
-const PORT = 8800;
+const PORT = ; // your port number
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
