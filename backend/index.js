@@ -50,5 +50,5 @@ async function connectDB() {
 connectDB();
 
 // Start Server
-const PORT = 8800;
+const PORT = 8800; // your port number
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
