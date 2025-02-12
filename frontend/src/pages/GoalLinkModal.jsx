@@ -41,20 +41,24 @@ const GoalLinkModal = ({ resource, onClose }) => {
 
   const handleLinkToExistingGoal = async (goalId) => {
     try {
-      await axiosInstance.post(`/goals/${goalId}/link-resource`, {
-        resourceData: {
-          title: resource.title,
-          platform: resource.platform,
-          link: resource.link,
-          thumbnail: resource.thumbnail,
-          duration: resource.duration
-        }
-      });
-      toast.success('Resource linked to goal successfully');
-      onClose();
+        await axiosInstance.post(`/goals/${goalId}/link-resource`, {
+            resourceData: {
+                title: resource.title,
+                platform: resource.platform,
+                link: resource.link,
+                thumbnail: resource.thumbnail,
+                duration: resource.duration
+            }
+        });
+        toast.success('Resource linked to goal successfully');
+        onClose();
     } catch (error) {
-      console.error('Error linking resource to goal:', error);
-      toast.error('Failed to link resource to goal');
+        console.error('Error linking resource to goal:', error);
+        if (error.response && error.response.status === 400) {
+            toast.error(error.response.data.message); // Display the backend error message
+        } else {
+            toast.error('Failed to link resource to goal');
+        }
     }
   };
 
@@ -95,7 +99,7 @@ const GoalLinkModal = ({ resource, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+    <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-fadeIn">
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
         <button 
           onClick={onClose} 
@@ -133,7 +137,9 @@ const GoalLinkModal = ({ resource, onClose }) => {
                               </div>
                               <button
                                 onClick={() => handleLinkToExistingGoal(goal._id)}
-                                className="flex items-center text-blue-600 hover:text-blue-800"
+                                className="flex items-center text-blue-600 dark:text-blue-400 
+                                          hover:text-blue-800 dark:hover:text-blue-300 
+                                          transition-all duration-200"
                               >
                                 <LinkIcon className="w-4 h-4 mr-1" />
                                 Link

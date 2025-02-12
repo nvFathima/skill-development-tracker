@@ -1,74 +1,62 @@
-.nested-content {
-    width: 100%;
-    height: calc(100vh - 64px); /* Adjust based on header height */
-    overflow-y: auto;
-  }
-  
-  :root {
-    --bg-color: #f9fafb;
-    --text-color: #1f2937;
-    --primary-color: #2563eb;
-  }
-  
-  /* Dark Theme */
-  [data-theme="dark"] {
-    --bg-color: #1f2937;
-    --text-color: #f9fafb;
-    --primary-color: #3b82f6;
-  }
-  
-  body {
-    margin: 0;
-    font-family: "Roboto", sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-  }
-  
-  .dashboard {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-  }
-  .menu-item {
-    display: block;
-    padding: 10px 20px;
-    border-radius: 5px;
-    color: #fff;
-    text-decoration: none;
-    transition: background 0.3s;
-  }
-  
-  .menu-item:hover {
-    background-color: var(--secondary-color);
-  }
-  
-  .header {
-    background-color: #fff;
-    color: var(--text-color);
-  }
-  
-  .theme-toggle {
-    background-color: var(--primary-color);
-    color: #fff;
-    padding: 5px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .theme-toggle:hover {
-    background-color: var(--secondary-color);
-  }
-  
-  .card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
+/* Sidebar */
+.sidebar {
+  @apply bg-white dark:bg-gray-900 shadow-md fixed top-0 left-0 h-full p-5 transition-all duration-300;
+}
+.sidebar-expanded {
+  @apply w-64;
+}
+.sidebar-collapsed {
+  @apply w-20;
+}
+.sidebar-logo {
+  @apply h-10 transition-all;
+}
+.sidebar-nav {
+  @apply mt-6 space-y-4;
+}
+.sidebar-nav-link {
+  @apply flex items-center gap-2 p-3 rounded-lg hover:bg-blue-100 text-gray-700 dark:text-white;
+}
 
-  
+/* Main Content */
+.main-content {
+  @apply flex-1 p-2 transition-all;
+}
+.main-content-expanded {
+  @apply ml-64;
+}
+.main-content-collapsed {
+  @apply ml-20;
+}
+
+/* Header */
+.header {
+  @apply flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow relative top-0 left-0 right-0 z-10 dark:bg-gray-900;
+}
+.header-title {
+  @apply text-2xl font-semibold dark:text-white;
+}
+.header-icons {
+  @apply flex items-center gap-6;
+}
+
+/* Notifications */
+.notification-badge {
+  @apply absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs;
+}
+.notification-item {
+  @apply flex items-start p-3 bg-gray-50 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition;
+}
+.notification-text {
+  @apply text-sm font-semibold dark:text-white;
+}
+
+/* Profile Dropdown */
+.profile-dropdown {
+  @apply rounded-full overflow-hidden w-10 h-10 border border-gray-300 dark:border-gray-700;
+}
+
+/* Logout Button */
+.logout-button {
+  @apply text-red-500 hover:bg-red-100 dark:hover:bg-red-800 transition;
+}

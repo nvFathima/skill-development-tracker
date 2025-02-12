@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -32,7 +32,7 @@ axiosInstance.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             // Clear storage and redirect to login
-            localStorage.clear();
+            sessionStorage.clear();
             window.location.href = '/log-in';
         }
         return Promise.reject(error);

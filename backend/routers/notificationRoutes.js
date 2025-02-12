@@ -6,4 +6,5 @@ const router = express.Router();
 router.get('/', auth, notificationController.getNotifications);
 router.patch('/:id/read', auth, notificationController.markNotificationAsRead);
 router.delete('/:id', auth, notificationController.deleteNotification);
+router.delete('/', auth, notificationController.deleteAllNotifications);
 module.exports = router;

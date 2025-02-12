@@ -24,7 +24,7 @@ const ResourceRecommendations = () => {
   });
   
   const [savedResources, setSavedResources] = useState(() => {
-    const saved = localStorage.getItem('savedResources');
+    const saved = sessionStorage.getItem('savedResources');
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -92,7 +92,7 @@ const ResourceRecommendations = () => {
       const newSaved = prev.includes(resourceId)
         ? prev.filter(id => id !== resourceId)
         : [...prev, resourceId];
-      localStorage.setItem('savedResources', JSON.stringify(newSaved));
+      sessionStorage.setItem('savedResources', JSON.stringify(newSaved));
       return newSaved;
     });
   }, []);
@@ -101,7 +101,8 @@ const ResourceRecommendations = () => {
     if (!resource) return null;
     
     return (
-      <div key={resource.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+      <div key={resource.id} className="bg-white dark:bg-gray-900 rounded-lg shadow hover:shadow-lg transition-shadow border dark:border-gray-700">
+        {/* Thumbnail */}
         {resource.thumbnail && (
           <div 
             className="relative cursor-pointer"
@@ -121,17 +122,21 @@ const ResourceRecommendations = () => {
           </div>
         )}
         
+        {/* Card Content */}
         <div className="p-6">
+          {/* Title & Save Button */}
           <div className="flex justify-between items-start mb-4">
             <h3 
-              className="text-lg font-semibold line-clamp-2 cursor-pointer hover:text-blue-600"
+              className="text-lg font-semibold line-clamp-2 cursor-pointer 
+                        hover:text-blue-600 dark:hover:text-blue-400 
+                        dark:text-gray-200"
               onClick={() => navigate(`/user-dashboard/resources/${resource.id}`)}
             >
               {resource.title}
             </h3>
             <button
               onClick={() => toggleSaveResource(resource.id)}
-              className="text-gray-400 hover:text-blue-500"
+              className="text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400"
             >
               {savedResources.includes(resource.id) ? (
                 <BookmarkCheck className="w-5 h-5" />
@@ -141,7 +146,8 @@ const ResourceRecommendations = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+          {/* Resource Info */}
+          <div className="grid grid-cols-2 gap-2 mb-4 text-sm dark:text-gray-300">
             <div>
               <span className="font-medium">Platform:</span> {resource.platform}
             </div>
@@ -155,10 +161,11 @@ const ResourceRecommendations = () => {
             )}
           </div>
 
+          {/* Actions */}
           <div className="flex justify-between items-center mt-4">
             <button
               onClick={() => navigate(`/user-dashboard/resources/${resource.id}`)}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500"
             >
               View Details
             </button>
@@ -166,7 +173,7 @@ const ResourceRecommendations = () => {
               href={resource.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center text-blue-600 hover:text-blue-800"
+              className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-500"
             >
               View Resource <ExternalLink className="ml-1 w-4 h-4" />
             </a>
@@ -178,31 +185,39 @@ const ResourceRecommendations = () => {
 
   const renderPagination = useMemo(() => {
     if (totalPages <= 1) return null;
-
+  
     const pageButtons = Array.from({ length: totalPages }, (_, i) => i + 1)
       .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 2);
-
+  
     return (
       <div className="flex justify-center items-center space-x-2 mt-6">
+        {/* Previous Button */}
         <button
           onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
           disabled={currentPage === 1}
-          className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed
+                     bg-white dark:bg-gray-800 
+                     text-gray-900 dark:text-gray-300 
+                     border-gray-300 dark:border-gray-600 
+                     hover:bg-gray-200 dark:hover:bg-gray-700"
         >
           Previous
         </button>
         
+        {/* Page Numbers */}
         <div className="flex space-x-1">
           {pageButtons.map((page, index, array) => {
             const showEllipsis = index > 0 && page - array[index - 1] > 1;
             return (
               <React.Fragment key={page}>
-                {showEllipsis && <span className="px-4 py-2">...</span>}
+                {showEllipsis && <span className="px-4 py-2 text-gray-500 dark:text-gray-400">...</span>}
                 <button
                   onClick={() => setCurrentPage(page)}
-                  className={`px-4 py-2 border rounded-lg ${
-                    currentPage === page ? 'bg-blue-500 text-white' : ''
-                  }`}
+                  className={`px-4 py-2 border rounded-lg transition-all
+                             text-gray-900 dark:text-gray-300 
+                             border-gray-300 dark:border-gray-600 
+                             hover:bg-gray-200 dark:hover:bg-gray-700 
+                             ${currentPage === page ? 'bg-blue-500 text-white dark:bg-blue-500' : ''}`}
                 >
                   {page}
                 </button>
@@ -210,55 +225,54 @@ const ResourceRecommendations = () => {
             );
           })}
         </div>
-
+  
+        {/* Next Button */}
         <button
           onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
           disabled={currentPage === totalPages}
-          className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed
+                     bg-white dark:bg-gray-800 
+                     text-gray-900 dark:text-gray-300 
+                     border-gray-300 dark:border-gray-600 
+                     hover:bg-gray-200 dark:hover:bg-gray-700"
         >
           Next
         </button>
       </div>
     );
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages]);  
 
   return (
-    <div className="space-y-6">
-      {hasSkillsOrGoals && resources.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
+    <div className="space-y-10">
+      {hasSkillsOrGoals && (
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-6 border dark:border-gray-700">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Search within resources..."
-                className="w-full pl-10 pr-4 py-2 border rounded-lg"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
+                <input
+                  type="text" placeholder="Search within resources..."
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg 
+                            bg-white dark:bg-gray-800 
+                            text-gray-900 dark:text-gray-300 
+                            border-gray-300 dark:border-gray-700 
+                            focus:ring-2 focus:ring-blue-600"
+                  value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
 
             <div className="flex flex-wrap gap-2">
               {[
-                { 
-                  key: 'type', 
-                  options: ['all', 'Course', 'Tutorial', 'Learning-Materials'],
-                  label: 'All Types' 
-                },
-                { 
-                  key: 'skillLevel', 
-                  options: ['all', 'Beginner', 'Intermediate', 'Advanced'],
-                  label: 'All Levels' 
-                },
-                { 
-                  key: 'platform', 
-                  options: ['all', 'YouTube', 'FreeCodeCamp', 'KhanAcademy'],
-                  label: 'All Platforms' 
-                }
+                { key: 'type', options: ['all', 'Course', 'Tutorial', 'Learning-Materials'], label: 'All Types' },
+                { key: 'skillLevel', options: ['all', 'Beginner', 'Intermediate', 'Advanced'], label: 'All Levels' },
+                { key: 'platform', options: ['all', 'YouTube', 'FreeCodeCamp', 'KhanAcademy'], label: 'All Platforms' }
               ].map(({ key, options, label }) => (
                 <select
                   key={key}
-                  className="px-4 py-2 border rounded-lg"
+                  className="px-4 py-2 border rounded-lg 
+                            bg-white dark:bg-gray-800 
+                            text-gray-900 dark:text-gray-300 
+                            border-gray-300 dark:border-gray-700 
+                            focus:ring-2 focus:ring-blue-600"
                   value={filters[key]}
                   onChange={(e) => setFilters(prev => ({...prev, [key]: e.target.value}))}
                 >
@@ -294,9 +308,9 @@ const ResourceRecommendations = () => {
 
       {!loading && !hasSkillsOrGoals && (
         <div className="text-center py-12">
-          <Filter className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Resources Found</h3>
-          <p className="text-gray-500">
+          <Filter className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">No Resources Found</h3>
+          <p className="text-gray-500 dark:text-gray-400">
             Add some skills or goals to get personalized resource recommendations.
           </p>
         </div>
@@ -304,9 +318,9 @@ const ResourceRecommendations = () => {
 
       {!loading && hasSkillsOrGoals && resources.length === 0 && (
         <div className="text-center py-12">
-          <Filter className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Matching Resources</h3>
-          <p className="text-gray-500">
+          <Filter className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-200 mb-2">No Matching Resources</h3>
+          <p className="text-gray-500 dark:text-gray-400">
             Try adjusting your search or filter criteria to find more resources.
           </p>
         </div>

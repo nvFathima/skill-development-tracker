@@ -1,0 +1,36 @@
+.home-container {
+    text-align: center;
+    padding: 50px 20px;
+  }
+  
+  header {
+    background: #1e1e2d;
+    color: white;
+    padding: 50px;
+    border-radius: 10px;
+  }
+  
+  .btn {
+    background: #ff7b00;
+    padding: 10px 20px;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+  }
+  
+  .features {
+    margin-top: 40px;
+  }
+  
+  .feature-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+  }
+  
+  .feature-grid div {
+    background: #f4f4f4;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  

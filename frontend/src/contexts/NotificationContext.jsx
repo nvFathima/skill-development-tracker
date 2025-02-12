@@ -12,7 +12,7 @@ export const NotificationProvider = ({ children }) => {
     try {
       const response = await axiosInstance.get('/notifications', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
       });
       setNotifications(response.data);
@@ -26,7 +26,7 @@ export const NotificationProvider = ({ children }) => {
     try {
       await axiosInstance.patch(`/notifications/${notificationId}/read`, {}, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
       });
       await fetchNotifications();
@@ -40,7 +40,7 @@ export const NotificationProvider = ({ children }) => {
       console.log(notificationId);
       await axiosInstance.delete(`/notifications/${notificationId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
       });
       await fetchNotifications();
@@ -48,6 +48,20 @@ export const NotificationProvider = ({ children }) => {
       console.error('Error deleting notification:', error);
     }
   };
+
+  const deleteAllNotifications = async () => {
+    try {
+      await axiosInstance.delete('/notifications', {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+      await fetchNotifications(); // Refresh notifications after deletion
+    } catch (error) {
+      console.error('Error deleting all notifications:', error);
+      throw error; // Ensure errors propagate to UI for toast messages
+    }
+  };  
 
   useEffect(() => {
     fetchNotifications();
@@ -61,7 +75,8 @@ export const NotificationProvider = ({ children }) => {
       unreadCount, 
       markAsRead, 
       deleteNotification,
-      fetchNotifications 
+      deleteAllNotifications,
+      fetchNotifications
     }}>
       {children}
     </NotificationContext.Provider>

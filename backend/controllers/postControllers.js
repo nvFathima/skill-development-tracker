@@ -46,8 +46,16 @@ const getPostById = async (req, res) => {
 // Get all posts with pagination and user filtering
 const getPosts = async (req, res) => {
     try {
-        const { skillId, userId, page = 1, limit = 8 } = req.query;
+        const { skillId, userId, page = 1, limit = 8, sort = 'recent', search = '' } = req.query;
         let query = {};
+
+        // Add search functionality
+        if (search) {
+            query.$or = [
+            { title: { $regex: search, $options: 'i' } }, // Case-insensitive search in title
+            { tags: { $regex: search, $options: 'i' } }, // Case-insensitive search in tags
+            ];
+        }
 
         // Add filters to query
         if (skillId) {
@@ -59,10 +67,25 @@ const getPosts = async (req, res) => {
             query.author = userId;
         }
 
+        let sortQuery = {};
+        switch (sort) {
+        case 'recent':
+            sortQuery = { createdAt: -1 }; // Sort by most recent
+            break;
+        case 'popular':
+            sortQuery = { likes: -1 }; // Sort by most likes
+            break;
+        case 'commented':
+            sortQuery = { comments: -1 }; // Sort by most comments
+            break;
+        default:
+            sortQuery = { createdAt: -1 };
+        }
+
         const totalPosts = await Post.countDocuments(query);
         const posts = await Post.find(query)
             .populate('author', 'fullName profilePhoto')
-            .sort({ createdAt: -1 })
+            .sort(sortQuery)
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
 

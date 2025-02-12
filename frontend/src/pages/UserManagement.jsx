@@ -19,7 +19,7 @@ const UserManagement = () => {
 
   useEffect(() => {
     fetchUsers();
-    setCurrentAdminId(localStorage.getItem("userId"));
+    setCurrentAdminId(sessionStorage.getItem("userId"));
   }, []);
 
   const fetchUsers = async () => {

@@ -14,5 +14,5 @@ yarn-error.log
 /build
 
 # Ignore sensitive folders
-uploads/
-notes.txt/
+# uploads/
+# notes.txt/

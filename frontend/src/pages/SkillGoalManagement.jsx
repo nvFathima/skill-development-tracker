@@ -221,50 +221,73 @@ const SkillGoalManagement = () => {
     }
   };
 
-  return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-bold">Skills & Goals Management</h2>
+  const resetGoalForm = () => {
+    setNewGoal({
+      title: "",
+      description: "No description provided",
+      startDate: "",
+      targetCompletionDate: "",
+      status: "Pending"
+    });
+    setEditingGoal(null);
+  };
 
+  const handleGoalModalClose = (isOpen) => {
+    if (!isOpen) {
+      resetGoalForm();
+    }
+    setGoalModalOpen(isOpen);
+  };
+  const handleGoalModalCancel = () => {
+    resetGoalForm();
+    setGoalModalOpen(false);
+  };
+
+  return (
+    <div className="p-6 space-y-10">
+      <h2 className="text-3xl font-bold dark:text-white">Skills & Goals Management</h2>
+
+      {/* Alert Box for Errors */}
       {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
+        <Alert variant="destructive" className="flex items-center space-x-2">
+          <AlertCircle className="h-5 w-5" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {/* Skills Section */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-semibold">Your Skills</h3>
-          <Button onClick={() => setSkillModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Add Skill
+      <div className="space-y-6">
+        <div className="flex justify-between items-center border-b pb-2">
+          <h3 className="text-2xl font-semibold dark:text-gray-200">Your Skills</h3>
+          <Button onClick={() => setSkillModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Plus className="mr-2 h-5 w-5" /> Add Skill
           </Button>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-md border shadow-lg bg-white dark:bg-gray-900">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Skill Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Actions</TableHead>
+              <TableRow className="bg-gray-200 dark:bg-gray-800">
+                <TableHead className="px-4 py-3">Skill Name</TableHead>
+                <TableHead className="px-4 py-3">Description</TableHead>
+                <TableHead className="px-4 py-3 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {skills.map((skill) => (
-                <TableRow key={skill._id}>
-                  <TableCell>{skill.name}</TableCell>
-                  <TableCell>{skill.description}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" onClick={() => handleViewSkillDetails(skill)}>
+                <TableRow key={skill._id} className="even:bg-gray-100 dark:even:bg-gray-800">
+                  <TableCell className="px-4 py-3 dark:text-white">{skill.name}</TableCell>
+                  <TableCell className="px-4 py-3 dark:text-white">{skill.description}</TableCell>
+                  <TableCell className="px-4 py-3 text-right">
+                    <div className="flex gap-3 justify-end">
+                      <Button variant="outline" onClick={() => handleViewSkillDetails(skill)} className="text-blue-600 border-blue-600 hover:bg-blue-100">
                         View Details
                       </Button>
-                      <Button variant="outline" onClick={() => fetchGoals(skill._id, skill.name)}>
+                      <Button variant="outline" onClick={() => fetchGoals(skill._id, skill.name)} className="text-green-600 border-green-600 hover:bg-green-100">
                         View Goals
                       </Button>
-                      <Button variant="destructive" onClick={() => handleDeleteSkill(skill._id)} >
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="destructive" onClick={() => handleDeleteSkill(skill._id)}>
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </div>
                   </TableCell>
@@ -277,84 +300,73 @@ const SkillGoalManagement = () => {
 
       {/* Goals Section */}
       {selectedSkill && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-semibold">Goals for {selectedSkill.name}</h3>
-            <Button onClick={() => setGoalModalOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Add Goal
+        <div className="space-y-6">
+          <div className="flex justify-between items-center border-b pb-2">
+            <h3 className="text-2xl font-semibold dark:text-gray-200">Goals for {selectedSkill.name}</h3>
+            <Button onClick={() => setGoalModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Plus className="mr-2 h-5 w-5" /> Add Goal
             </Button>
           </div>
 
-          <div className="rounded-md border">
+          <div className="rounded-md border shadow-lg bg-white dark:bg-gray-900">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>Target Completion</TableHead>
-                  <TableHead>Linked Resources</TableHead>
-                  <TableHead>Actions</TableHead>
+                <TableRow className="bg-gray-200 dark:bg-gray-800">
+                  <TableHead className="px-4 py-3">Title</TableHead>
+                  <TableHead className="px-4 py-3">Status</TableHead>
+                  <TableHead className="px-4 py-3">Start Date</TableHead>
+                  <TableHead className="px-4 py-3">Target Completion</TableHead>
+                  <TableHead className="px-4 py-3">Linked Resources</TableHead>
+                  <TableHead className="px-4 py-3 text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {goals.map((goal) => (
-                  <React.Fragment key={goal._id}>
-                    <TableRow>
-                      <TableCell>{goal.title}</TableCell>
-                      <TableCell className="capitalize">{goal.status}</TableCell>
-                      <TableCell>
-                        {format(new Date(goal.startDate), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(goal.targetCompletionDate), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        {goal.resources && goal.resources.length > 0 ? (
-                          <div className="space-y-2">
+                    <TableRow key={goal._id} className="even:bg-gray-100 dark:even:bg-gray-800 dark:text-white">
+                      <TableCell className="px-4 py-3">{goal.title}</TableCell>
+                      <TableCell className="px-4 py-3 capitalize">{goal.status}</TableCell>
+                      <TableCell className="px-4 py-3">{format(new Date(goal.startDate), "MMM d, yyyy")}</TableCell>
+                      <TableCell className="px-4 py-3">{format(new Date(goal.targetCompletionDate), "MMM d, yyyy")}</TableCell>
+                      <TableCell className="px-4 py-3">
+                        {goal.resources.length > 0 ? (
+                          <ul className="list-disc pl-4">
                             {goal.resources.map((resource, index) => (
-                              <div key={index} className="flex items-center justify-between text-sm">
+                              <li key={index} className="text-sm flex items-center justify-between group">
                                 <div className="flex items-center">
-                                  <LinkIcon className="h-4 w-4 mr-2" />
-                                  <a 
-                                    href={resource.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800"
-                                  >
+                                  <LinkIcon className="h-4 w-4 mr-2 text-blue-600" />
+                                  <a href={resource.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                                     {resource.title}
                                   </a>
                                 </div>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleUnlinkResource(goal._id, resource.link)}
+                                  onClick={(e) => {
+                                    e.preventDefault(); // Prevent link click
+                                    handleUnlinkResource(goal._id, resource.link);
+                                  }}
+                                  className="opacity-0 group-hover:opacity-100 text-red-600 hover:text-red-700 hover:bg-red-50 -mr-2"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
-                              </div>
+                              </li>
                             ))}
-                          </div>
+                          </ul>
                         ) : (
                           <span className="text-gray-500">No resources linked</span>
                         )}
                       </TableCell>
-                      <TableCell>
-                        {goal.status === "completed" ? (
-                          <span className="text-green-500 font-bold">Completed</span>
-                        ) : (
-                          <div className="flex space-x-2">
-                            <Button variant="outline" onClick={() => handleEditGoal(goal)}>
-                              Edit
-                            </Button>
-                            <Button variant="destructive" onClick={() => handleDeleteGoal(goal._id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
+                      <TableCell className="px-4 py-3 text-right">
+                        <div className="flex gap-3 justify-end">
+                          <Button variant="outline" onClick={() => handleEditGoal(goal)} className="text-blue-600 border-blue-600 hover:bg-blue-100">
+                            Edit
+                          </Button>
+                          <Button variant="destructive" onClick={() => handleDeleteGoal(goal._id)}>
+                            <Trash2 className="h-5 w-5" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
-                  </React.Fragment>
                 ))}
               </TableBody>
             </Table>
@@ -364,121 +376,173 @@ const SkillGoalManagement = () => {
 
       {/* Add Skill Dialog */}
       <Dialog open={skillModalOpen} onOpenChange={setSkillModalOpen}>
-        <DialogContent>
+        <DialogContent className="p-6 max-w-lg shadow-lg dark:bg-gray-900 border dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle>Add New Skill</DialogTitle>
+            <DialogTitle className="text-xl font-bold dark:text-white">Add New Skill</DialogTitle>
           </DialogHeader>
+
           <div className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="skillName">Name</label>
-              <Input id="skillName" value={newSkill.name}
-                onChange={(e) =>
-                  setNewSkill({ ...newSkill, name: e.target.value })
-                } />
+              <label htmlFor="skillName" className="text-gray-700 dark:text-gray-300">Skill Name</label>
+              <Input 
+                id="skillName"
+                value={newSkill.name}
+                onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
+                className="text-lg px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-600"
+              />
             </div>
+
             <div className="space-y-2">
-              <label htmlFor="skillDescription">Description</label>
-              <Textarea id="skillDescription" value={newSkill.description}
-                onChange={(e) =>
-                  setNewSkill({ ...newSkill, description: e.target.value })
-                } />
+              <label htmlFor="skillDescription" className="text-gray-700 dark:text-gray-300">Description</label>
+              <Textarea 
+                id="skillDescription"
+                value={newSkill.description}
+                onChange={(e) => setNewSkill({ ...newSkill, description: e.target.value })}
+                className="text-lg px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-600 dark:text-white"
+              />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSkillModalOpen(false)}>
+
+          <DialogFooter className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setSkillModalOpen(false)} className="px-6 py-2 text-lg dark:text-gray-500">
               Cancel
             </Button>
-            <Button onClick={handleAddSkill} disabled={loading}>
+            <Button onClick={handleAddSkill} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-lg">
               Save Skill
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Add skill view dialog */}
+      {/* View Skill Details Dialog */}
       <Dialog open={skillDetailsModalOpen} onOpenChange={setSkillDetailsModalOpen}>
-        <DialogContent>
+        <DialogContent className="p-6 max-w-lg shadow-lg dark:bg-gray-900 border dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle>{skillDetails?.name}</DialogTitle>
+            <DialogTitle className="text-xl font-bold dark:text-white">{skillDetails?.name}</DialogTitle>
           </DialogHeader>
+
           <div className="space-y-2">
-            <p><strong>Description:</strong> {skillDetails?.description}</p>
+            <p className="text-lg dark:text-gray-300"><strong>Description:</strong> {skillDetails?.description}</p>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSkillDetailsModalOpen(false)}>
+
+          <DialogFooter className="flex justify-end mt-4">
+            <Button variant="outline" onClick={() => setSkillDetailsModalOpen(false)} className="px-6 py-2 text-lg dark:text-gray-400">
               Close
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Add Goal Dialog */}
-      <Dialog open={goalModalOpen} onOpenChange={setGoalModalOpen}>
-        <DialogContent>
+      {/* Add / Edit Goal Dialog */}
+      <Dialog open={goalModalOpen} onOpenChange={handleGoalModalClose}>
+        <DialogContent className="p-6 max-w-lg shadow-lg dark:bg-gray-900 border dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle>{editingGoal ? "Edit Goal" : "Add New Goal"}</DialogTitle>
+            <DialogTitle className="text-xl font-bold dark:text-white">{editingGoal ? "Edit Goal" : "Add New Goal"}</DialogTitle>
           </DialogHeader>
+
           <div className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="goalTitle">Title</label>
-              <Input id="goalTitle" value={newGoal.title}
-                onChange={(e) =>
-                  setNewGoal({ ...newGoal, title: e.target.value })
-                } />
+              <label htmlFor="goalTitle" className="text-gray-700 dark:text-gray-300">Title</label>
+              <Input 
+                id="goalTitle"
+                value={newGoal.title}
+                onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
+                className="text-lg px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-600"
+              />
             </div>
+
             <div className="space-y-2">
-              <label htmlFor="goalDescription">Description</label>
-              <Textarea id="goalDescription" value={newGoal.description}
-                onChange={(e) =>
-                  setNewGoal({ ...newGoal, description: e.target.value })
-                } />
+              <label htmlFor="goalDescription" className="text-gray-700 dark:text-gray-300">Description</label>
+              <Textarea 
+                id="goalDescription"
+                value={newGoal.description}
+                onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
+                className="text-lg px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-600 dark:text-white"
+              />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="goalStartDate">Start Date</label>
-              <Input id="goalStartDate" type="date" value={newGoal.startDate}
-                onChange={(e) =>
-                  setNewGoal({ ...newGoal, startDate: e.target.value })
-                } />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="goalStartDate" className="text-gray-700 dark:text-gray-300">Start Date</label>
+                <Input 
+                  id="goalStartDate"
+                  type="date"
+                  value={newGoal.startDate}
+                  onChange={(e) => setNewGoal({ ...newGoal, startDate: e.target.value })}
+                  className="text-lg px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="goalTargetDate" className="text-gray-700 dark:text-gray-300">Target Completion Date</label>
+                <Input 
+                  id="goalTargetDate"
+                  type="date"
+                  value={newGoal.targetCompletionDate}
+                  onChange={(e) => setNewGoal({ ...newGoal, targetCompletionDate: e.target.value })}
+                  className="text-lg px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
             </div>
+
             <div className="space-y-2">
-              <label htmlFor="goalTargetDate">Target Completion Date</label>
-              <Input id="goalTargetDate" type="date" value={newGoal.targetCompletionDate}
-                onChange={(e) =>
-                  setNewGoal({ ...newGoal, targetCompletionDate: e.target.value })
-                } />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="goalStatus">Status</label>
+              <label htmlFor="goalStatus" className="text-gray-700 dark:text-gray-300">Status</label>
               <Select
                 value={newGoal.status}
-                onValueChange={(value) => {
-                  setNewGoal((prev) => ({
-                    ...prev,
-                    status: value,
-                  }));
-                }}
+                onValueChange={(value) => setNewGoal((prev) => ({ ...prev, status: value }))}
               >
-                <SelectTrigger id="goalStatus">
+                <SelectTrigger 
+                  id="goalStatus" 
+                  className="border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-800 
+                            text-gray-900 dark:text-gray-300 
+                            focus:ring-2 focus:ring-blue-600 
+                            rounded-md px-4 py-2"
+                >
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
+                <SelectContent className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg">
+                  <SelectItem 
+                    value="Pending" 
+                    className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-300"
+                  >
+                    Pending
+                  </SelectItem>
+                  <SelectItem 
+                    value="In Progress" 
+                    className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-300"
+                  >
+                    In Progress
+                  </SelectItem>
+                  <SelectItem 
+                    value="Completed" 
+                    className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-300"
+                  >
+                    Completed
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setGoalModalOpen(false)}>
+
+          <DialogFooter className="flex justify-end gap-3 mt-4">
+            <Button 
+              variant="outline" 
+              onClick={handleGoalModalCancel} 
+              className="px-6 py-2 text-lg dark:text-gray-500"
+            >
               Cancel
             </Button>
-            <Button onClick={handleAddGoal} disabled={loading}>
+            <Button 
+              onClick={handleAddGoal} 
+              disabled={loading} 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-lg"
+            >
               {editingGoal ? "Save Changes" : "Save Goal"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 };

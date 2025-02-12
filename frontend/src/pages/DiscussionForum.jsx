@@ -12,7 +12,7 @@ const DiscussionForum = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [viewingOwnPosts, setViewingOwnPosts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortOption, setSortOption] = useState('recent');
   const [newPost, setNewPost] = useState({ title: '', content: '', tags: '', category: '' });
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
@@ -59,7 +59,7 @@ const DiscussionForum = () => {
       }
     };
 
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       fetchCurrentUser();
     } else {
@@ -70,7 +70,9 @@ const DiscussionForum = () => {
   const fetchPosts = async (page = 1, onlyUserPosts = false) => {
     setIsLoading(true);
     try {
-      const url = `/posts?page=${page}&limit=8${onlyUserPosts && currentUser ? `&userId=${currentUser._id}` : ''}`;
+      const url = `/posts?page=${page}&limit=8${
+        onlyUserPosts && currentUser ? `&userId=${currentUser._id}` : ''
+      }&sort=${sortOption}&search=${searchQuery}`;
       const response = await axiosInstance.get(url);
       setPosts(response.data.posts);
       setCurrentPage(response.data.currentPage);
@@ -85,7 +87,7 @@ const DiscussionForum = () => {
 
   useEffect(() => {
     fetchPosts(currentPage, viewingOwnPosts);
-  }, [currentPage, viewingOwnPosts, currentUser]);
+  }, [currentPage, viewingOwnPosts, currentUser, sortOption, searchQuery]);
 
   // Handle new post submission
   const handlePostSubmit = async (e) => {
@@ -313,105 +315,105 @@ const handleLikeToggle = async (postId) => {
   };
 
   return (
-    <div className="space-y-6 min-h-screen bg-gray-50">
-      {editingPost && <EditPostModal />} 
-      {/* Header Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-          <h1 className="text-2xl font-bold">Discussion Forum</h1>
-          <button
-            onClick={() => setIsCreatingPost(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
-          >
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Start New Discussion
-          </button>
-        </div>
-      </div>
-
-      {/* Search and Filter Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search discussions..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <select
-            className="px-4 py-2 border rounded-lg"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value="all">All Categories</option>
-            <option value="React">React</option>
-            <option value="JavaScript">JavaScript</option>
-            <option value="Python">Python</option>
-            <option value="Programming">Programming</option>
-          </select>
-        </div>
-      </div>
-
-      {/* New Post Form */}
-      {isCreatingPost && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Create New Discussion</h2>
-            <form onSubmit={handlePostSubmit}>
-            <div>
-              <label className="block text-sm font-medium mb-1">Title</label>
-              <input
-                type="text"
-                value={newPost.title}
-                onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Content</label>
-              <textarea
-                value={newPost.content}
-                onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-                className="w-full p-2 border rounded"
-                rows="4"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
-              <input
-                type="text"
-                value={newPost.tags}
-                onChange={(e) => setNewPost({...newPost, tags: e.target.value})}
-                className="w-full p-2 border rounded"
-                placeholder="e.g., react, javascript, web development"
-                required
-              />
-            </div>
-            <div className="flex space-x-2">
-              <button 
-              type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Post
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCreatingPost(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-            </div>
-            </form>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {editingPost && <EditPostModal />} 
+        {/* Header Section */}
+        <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-800">
+          <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <h1 className="text-2xl font-bold dark:text-white">Discussion Forum</h1>
+            <button
+              onClick={() => setIsCreatingPost(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Start New Discussion
+            </button>
           </div>
         </div>
-        )}
 
-      <div className="max-w-6xl mx-auto p-6">
+        {/* Search and Filter Section */}
+        <div className="bg-white rounded-lg shadow p-6 dark:bg-gray-900">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative ">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 " size={20} />
+              <input
+                type="text"
+                placeholder="Search discussions..."
+                className="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:text-gray-300"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            {/* Sorting Options */}
+            <select
+              className="px-4 py-2 border rounded-lg"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+            >
+              <option value="recent">Most Recent</option>
+              <option value="popular">Most Liked</option>
+              <option value="commented">Most Commented</option>
+            </select>
+          </div>
+        </div>
+
+        {/* New Post Form */}
+        {isCreatingPost && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+              <h2 className="text-xl font-bold mb-4">Create New Discussion</h2>
+              <form onSubmit={handlePostSubmit}>
+              <div>
+                <label className="block text-sm font-medium mb-1">Title</label>
+                <input
+                  type="text"
+                  value={newPost.title}
+                  onChange={(e) => setNewPost({...newPost, title: e.target.value})}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Content</label>
+                <textarea
+                  value={newPost.content}
+                  onChange={(e) => setNewPost({...newPost, content: e.target.value})}
+                  className="w-full p-2 border rounded"
+                  rows="4"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  value={newPost.tags}
+                  onChange={(e) => setNewPost({...newPost, tags: e.target.value})}
+                  className="w-full p-2 border rounded"
+                  placeholder="e.g., react, javascript, web development"
+                  required
+                />
+              </div>
+              <div className="flex space-x-2">
+                <button 
+                type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                  Post
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCreatingPost(false)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+              </div>
+              </form>
+            </div>
+          </div>
+          )}
+
+      
         {/* Filter Buttons with improved styling */}
         <div className="flex justify-end gap-4 mb-6">
           <button
@@ -442,7 +444,7 @@ const handleLikeToggle = async (postId) => {
           </button>
         </div>
 
-        {/* Enhanced Posts List */}
+        {/* Posts List */}
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -450,18 +452,20 @@ const handleLikeToggle = async (postId) => {
         ) : posts.length > 0 ? (
           <div className="space-y-6">
             {posts.map((post) => (
-              <div key={post._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-                <div className="border-b border-gray-100 p-6">
+              <div key={post._id} className="bg-white dark:bg-gray-900 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                <div className="border-b border-gray-200 dark:border-gray-700 p-6">
                   {/* Post Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center space-x-4">
-                    <img
-                      src={`http://localhost:8800${post.author?.profilePhoto || '/default-avatar.png'}`}
-                      alt={post.author?.fullName || 'Unknown Author'}
-                      className="w-12 h-12 rounded-full border-2 border-gray-100"
-                    />
+                      <img
+                        src={post.author?.profilePhoto 
+                          ? `http://localhost:8800${post.author.profilePhoto}` 
+                          : '/default-avatar.png'}
+                        alt={post.author?.fullName || 'Unknown Author'}
+                        className="w-12 h-12 rounded-full border-2 border-gray-100"
+                      />
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+                        <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 dark:text-gray-100 transition-colors">
                           {post.title}
                         </h3>
                         <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -479,12 +483,12 @@ const handleLikeToggle = async (postId) => {
 
                   {/* Post Content */}
                   <div className="prose prose-sm max-w-none mb-4">
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-400">
                       {post.content.length > 200 ? (
                         <>
                           {post.content.slice(0, 200)}
                           <Link to={`/user-dashboard/forum/${post._id}`}
-                            className="text-blue-600 hover:text-blue-700 font-medium ml-2">
+                            className="text-blue-600 hover:text-blue-700 font-medium ml-2 ">
                             Read More...
                           </Link>
                         </>
@@ -506,26 +510,6 @@ const handleLikeToggle = async (postId) => {
 
                   {/* Post Footer */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    {/* <div className="flex items-center space-x-6">
-                      <button className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors">
-                        <ThumbsUp className="w-5 h-5" />
-                        <span className="text-sm font-medium">{post.likes || 0}</span>
-                      </button>
-                      <button className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors">
-                        <MessageCircle className="w-5 h-5" />
-                        <span className="text-sm font-medium">{post.comments?.length || 0}</span>
-                      </button>
-                    </div>
-                    {currentUser?.id === post.author?.id && (
-                      <div className="flex items-center space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-gray-400 hover:text-red-600 transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )} */}
                     <PostFooter post={post} />
                   </div>
                 </div>
@@ -533,7 +517,7 @@ const handleLikeToggle = async (postId) => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+          <div className="text-center py-12 bg-white rounded-xl shadow-sm dark:bg-gray-700">
             <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg font-medium">
               {viewingOwnPosts ? "You haven't created any posts yet." : "No posts found."}

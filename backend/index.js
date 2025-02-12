@@ -10,6 +10,7 @@ const userManageRoutes = require('./routers/userManageRoutes');
 const sgManageRoutes = require('./routers/sgManageRoutes');
 const notificationRoutes = require('./routers/notificationRoutes');
 const forumRoutes = require('./routers/forumRoutes');
+const statRoutes = require('./routers/statRoutes');
 const concernRoutes = require('./routers/concernRoutes');
 const path = require('path');
 const app = express();
@@ -31,16 +32,22 @@ app.use('/', sgManageRoutes);
 app.use('/', forumRoutes);
 app.use('/concerns',concernRoutes);
 app.use('/notifications', notificationRoutes);
+app.use('/stats',statRoutes);
 
 // MongoDB Connection
-main()
-.then(()=>console.log("DB Connected"))
-.catch(err=>console.log(err))
+const MONGO_URI = process.env.MONGO_URI;
 
-async function main() {
-    await mongoose.connect('mongodb+srv://fathimanv627:wtD3F6EDtmv9SjMx@skill-development-track.uf7qi.mongodb.net/skill-development-tracker');
-  
+async function connectDB() {
+    try {
+        await mongoose.connect(MONGO_URI);
+        console.log("DB Connected");
+    } catch (err) {
+        console.error("MongoDB connection error:", err);
+        process.exit(1); // Exit process on failure
+    }
 }
+
+connectDB();
 
 // Start Server
 const PORT = 8800;

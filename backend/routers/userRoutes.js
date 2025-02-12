@@ -6,6 +6,7 @@ uploadProfilePhoto, removeProfilePhoto, getOverview} = require('../controllers/u
 const upload = require('../middleware/upload');
 const authenticate = require('../middleware/auth');
 const updateActiveTimeMiddleware = require('../middleware/updateActiveTime');
+const { verifyEmail, resetPassword } = require('../controllers/authControllers');
 
 const router = express.Router();
 
@@ -13,6 +14,12 @@ router.post('/register', registerUser); // Register a new user
 router.get('/', getUsers);           // Get all users
 router.post('/login', loginUser);     // Get a user by ID
 router.post('/logout', logoutUser);
+
+// Route to verify email before resetting password
+router.post('/verify-email', verifyEmail);
+
+// Route to reset password
+router.post('/reset-password', resetPassword);
 
 // Profile Management Routes
 router.get('/profile', authenticate, getProfile); // Fetch profile

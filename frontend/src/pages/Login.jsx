@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
+import { CircleArrowLeft } from "lucide-react";
 import axiosInstance from '../utils/axios';
 import Textbox from "../components/ui/Textbox";
 import Button from "../components/ui/LoginButton";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion"; 
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
@@ -11,7 +13,7 @@ const Login = () => {
 
     const submitHandler = async (data) => {
         try {
-            localStorage.clear();
+            sessionStorage.clear();
 
             if (!data.email || !data.password) {
                 throw new Error('Email and password are required');
@@ -39,7 +41,7 @@ const Login = () => {
             };
 
             Object.entries(authData).forEach(([key, value]) => {
-                if (value) localStorage.setItem(key, value);
+                if (value) sessionStorage.setItem(key, value);
             });
 
             switch (role) {
@@ -63,9 +65,9 @@ const Login = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
-            const role = localStorage.getItem('role');
+            const role = sessionStorage.getItem('role');
             switch (role) {
                 case 'admin':
                     navigate('/admin-dashboard');
@@ -74,13 +76,18 @@ const Login = () => {
                     navigate('/user-dashboard');
                     break;
                 default:
-                    localStorage.clear();
+                    sessionStorage.clear();
             }
         }
     }, [navigate]);
 
     return (
+        
         <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#f3f4f6]'>
+            {/* Back to Home Link */}
+            <Link to="/" className="absolute top-6 left-6 text-blue-700 hover:underline text-sm">
+                <CircleArrowLeft size={22} /> Home
+            </Link>
             <div className='w-full md:w-auto flex gap-0 md:gap-40 flex-col md:flex-row items-center justify-center'>
                 {/* Left side */}
                 <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
@@ -99,6 +106,11 @@ const Login = () => {
 
                 {/* Right side */}
                 <div className='w-full md:w-1/3 p-4 md:p-1 flex flex-col justify-center items-center'>
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    transition={{ duration: 0.6, ease: "easeOut" }} 
+                >
                     <form
                         onSubmit={handleSubmit(submitHandler)}
                         className='form-container w-full md:w-[400px] flex flex-col gap-y-8 bg-white px-10 pt-14 pb-14'
@@ -144,7 +156,11 @@ const Login = () => {
                                 error={errors.password ? errors.password.message : ""}
                             />
 
-                            <span className='text-sm text-gray-500 hover:text-blue-600 hover:underline cursor-pointer'>
+                            {/* Forgot Password Link */}
+                            <span 
+                                onClick={() => navigate("/forgot-password")}
+                                className="text-sm text-gray-500 hover:text-blue-600 hover:underline cursor-pointer"
+                            >
                                 Forgot Password?
                             </span>
 
@@ -158,6 +174,7 @@ const Login = () => {
                             </p>
                         </div>
                     </form>
+                </motion.div>
                 </div>
             </div>
         </div>

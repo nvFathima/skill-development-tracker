@@ -13,7 +13,7 @@ const ConcernsManagement = () => {
 
   const fetchConcerns = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       const response = await axiosInstance.get('/concerns', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -27,7 +27,7 @@ const ConcernsManagement = () => {
 
   const updateConcernStatus = async (concernId, status) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       const response = await axiosInstance.patch(`/concerns/${concernId}`, 
         { status }, 
         { headers: { Authorization: `Bearer ${token}` } }

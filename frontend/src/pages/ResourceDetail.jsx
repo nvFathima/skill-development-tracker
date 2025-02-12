@@ -14,7 +14,7 @@ const ResourceDetail = () => {
   const [resource, setResource] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [savedResources, setSavedResources] = useState(() => {
-    const saved = localStorage.getItem('savedResources');
+    const saved = sessionStorage.getItem('savedResources');
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -42,7 +42,7 @@ const ResourceDetail = () => {
       const newSaved = prev.includes(resourceId)
         ? prev.filter(id => id !== resourceId)
         : [...prev, resourceId];
-      localStorage.setItem('savedResources', JSON.stringify(newSaved));
+      sessionStorage.setItem('savedResources', JSON.stringify(newSaved));
       return newSaved;
     });
   };
@@ -67,13 +67,15 @@ const ResourceDetail = () => {
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <button
         onClick={() => navigate('/user-dashboard/resources')}
-        className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
+        className="flex items-center text-gray-600 dark:text-gray-300 
+                  hover:text-blue-600 dark:hover:text-blue-400 
+                  transition-all duration-200"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
         Back to Resources
       </button>
 
-      <Card>
+      <Card className="bg-white dark:bg-gray-900 shadow-md border dark:border-gray-700 rounded-lg">
         <CardContent className="p-6">
           <div className="space-y-6">
             {resource.thumbnail && (
@@ -85,10 +87,12 @@ const ResourceDetail = () => {
             )}
 
             <div className="flex justify-between items-start">
-              <h1 className="text-2xl font-bold">{resource.title}</h1>
+              <h1 className="text-2xl font-bold dark:text-white">{resource.title}</h1>
               <button
                 onClick={toggleSaveResource}
-                className="text-gray-400 hover:text-blue-500"
+                className="text-gray-400 dark:text-gray-500 
+                          hover:text-blue-500 dark:hover:text-blue-400 
+                          transition-all duration-200"
               >
                 {savedResources.includes(resourceId) ? (
                   <BookmarkCheck className="w-6 h-6" />
@@ -98,7 +102,8 @@ const ResourceDetail = () => {
               </button>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            {/* Resource Details Grid */}
+            <div className="grid md:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300">
               <div>
                 <span className="font-medium">Type:</span> {resource.type || 'Tutorial'}
               </div>
@@ -110,7 +115,7 @@ const ResourceDetail = () => {
               </div>
               {resource.duration && (
                 <div className="flex items-center">
-                  <Clock className="w-4 h-4 mr-2" />
+                  <Clock className="w-4 h-4 mr-2 text-blue-500" />
                   <span className="font-medium">Duration:</span> {formatDuration(resource.duration)}
                 </div>
               )}
@@ -127,10 +132,14 @@ const ResourceDetail = () => {
                   {formatViews(resource.viewCount)} views
                 </span>
               )}
+              {/* Open Resource Link */}
               <a href={resource.link} target="_blank" rel="noopener noreferrer"
-                className="flex items-center text-blue-600 hover:text-blue-800"
+                className="flex items-center justify-center 
+                          bg-blue-600 hover:bg-blue-700 
+                          text-white px-6 py-3 rounded-lg 
+                          transition-all duration-200 shadow-md hover:shadow-lg"
               >
-                Open Resource <ExternalLink className="ml-1 w-4 h-4" />
+                Open Resource <ExternalLink className="ml-2 w-5 h-5" />
               </a>
             </div>
 

@@ -194,7 +194,7 @@ const DiscussionDetail = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
       <button
         onClick={() => navigate('/user-dashboard/forum')}
         className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
@@ -203,17 +203,19 @@ const DiscussionDetail = () => {
         Back to Discussions
       </button>
 
-      <Card>
+      <Card className="bg-white dark:bg-gray-900 shadow-md border dark:border-gray-700 rounded-lg">
         <CardContent className="p-6">
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
               <img
-                src={post.author?.profilePhoto || '/default-avatar.png'}
-                alt={post.author?.fullName}
+                src={post.author?.profilePhoto 
+                  ? `http://localhost:8800${post.author.profilePhoto}` 
+                  : '/default-avatar.png'}
+                alt={post.author?.fullName || 'Unknown Author'}
                 className="w-12 h-12 rounded-full"
               />
               <div>
-                <h1 className="text-2xl font-bold">{post.title}</h1>
+                <h1 className="text-2xl font-bold dark:text-gray-100">{post.title}</h1>
                 <div className="text-sm text-gray-500">
                   Posted by {post.author?.fullName} • {formatDate(post.createdAt)}
                 </div>
@@ -221,7 +223,7 @@ const DiscussionDetail = () => {
             </div>
 
             <div className="prose max-w-none">
-              <p className="text-gray-700 whitespace-pre-wrap">{post.content}</p>
+              <p className="text-gray-700 whitespace-pre-wrap dark:text-gray-400">{post.content}</p>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -265,16 +267,16 @@ const DiscussionDetail = () => {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-white dark:bg-gray-900 shadow-md border dark:border-gray-700 rounded-lg">
         <CardContent className="p-6">
-          <h2 className="text-xl font-bold mb-4">Comments</h2>
+          <h2 className="text-xl font-bold mb-4 dark:text-gray-200">Comments</h2>
           
           <form onSubmit={handleCommentSubmit} className="mb-6">
             <div className="flex space-x-4">
               <input
                 type="text" value={comment} onChange={(e) => setComment(e.target.value)}
                 placeholder="Add a comment..."
-                className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-800 dark:text-gray-200"
                 required
               />
               <button type="submit"
