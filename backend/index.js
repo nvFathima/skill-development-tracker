@@ -37,6 +37,7 @@ app.use('/stats',statRoutes);
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI;
 
+<<<<<<< HEAD
 async function connectDB() {
     try {
         await mongoose.connect(MONGO_URI);
@@ -45,10 +46,15 @@ async function connectDB() {
         console.error("MongoDB connection error:", err);
         process.exit(1); // Exit process on failure
     }
+=======
+async function main() {
+    await mongoose.connect('mongodb connection string');
+  
+>>>>>>> 84bc1c288eaeb8342009e5ca98c21f3a6e15f6f7
 }
 
 connectDB();
 
 // Start Server
-const PORT = 8800;
+const PORT = ; // your port number
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
