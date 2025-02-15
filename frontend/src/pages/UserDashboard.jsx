@@ -5,15 +5,38 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card, CardContent } from "@/components/ui/card";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import axiosInstance from "../utils/axios";
-import "./css/UserDashboard.css";  // Import the new CSS file
+import "./css/UserDashboard.css";
 
 const UserDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [userName, setUserName] = useState("User");
-  const [userProfilePic, setUserProfilePic] = useState("/default-avatar.png");
   const navigate = useNavigate();
+  const [profile, setProfile] = useState({
+      fullName: '',
+      age: '',
+      email: '',
+      phone: '',
+      alternateEmail: '',
+      profilePhoto: '',
+      employmentDetails: {
+        status: 'unemployed',
+        currentJob: { company: '', title: '', startDate: '' },
+        preferredJobs: [],
+      },
+      education: [],
+    });
+
+  const fetchProfile = async () => {
+    try {
+      const response = await axiosInstance.get('/profile');
+      setProfile(response.data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      toast.error('Failed to load profile.');
+    }
+  };
 
   // Fetch Notifications
   const fetchNotifications = async () => {
@@ -31,18 +54,37 @@ const UserDashboard = () => {
     }
   };
 
+  // New function to mark notification as read
+  const handleNotificationClick = async (notification) => {
+    if (notification.read) return; // Skip if already read
+
+    const token = sessionStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      await axiosInstance.patch(`/notifications/${notification._id}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Update local state
+      setNotifications(notifications.map(n => 
+        n._id === notification._id ? { ...n, read: true } : n
+      ));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
   // Fetch user details and notifications on mount
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     const name = sessionStorage.getItem("name");
-    const profilePhoto = sessionStorage.getItem("profilePhoto");
 
     if (token) {
       setUserName(name || "User");
-      if (profilePhoto) {
-        setUserProfilePic(`http://localhost:8800${profilePhoto}`);
-      }
       fetchNotifications();
+      fetchProfile();
       const interval = setInterval(fetchNotifications, 60000); // Refresh notifications every minute
       return () => clearInterval(interval);
     }
@@ -58,7 +100,11 @@ const UserDashboard = () => {
       {/* Sidebar */}
       <aside className={`sidebar ${isSidebarOpen ? "sidebar-expanded" : "sidebar-collapsed"}`}>
         <div className="flex justify-between items-center mb-6">
-          <img src="/Skillify_logo.png" alt="Skillify Logo" className={`sidebar-logo ${isSidebarOpen ? "block" : "hidden"}`} />
+        <img 
+          src="/Skillify_logo1.png" 
+          alt="Skillify Logo" 
+          className={`sidebar-logo ${isSidebarOpen ? "block" : "hidden"} max-w-[80%]`} 
+        />
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-gray-600 dark:text-white">
             {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -101,7 +147,11 @@ const UserDashboard = () => {
               <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-y-auto shadow-lg bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg">
                 {notifications.length > 0 ? (
                   notifications.slice(0, 5).map((notification) => (
-                    <DropdownMenuItem key={notification._id} className="notification-item">
+                    <DropdownMenuItem 
+                      key={notification._id} 
+                      className={`notification-item ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
                       <div className="flex flex-col gap-1">
                         <span className="notification-text">{notification.message}</span>
                         <span className="text-xs text-gray-500">{new Date(notification.createdAt).toLocaleDateString()}</span>
@@ -117,7 +167,7 @@ const UserDashboard = () => {
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger className="profile-dropdown">
-                <img src={userProfilePic} alt={userName} className="w-full h-full object-cover" />
+                <img src={profile.profilePhoto?`http://localhost:8800${profile.profilePhoto}`:'/default-avatar.png'} alt={userName} className="w-full h-full object-cover" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 shadow-lg bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg">
                 <DropdownMenuItem onClick={() => navigate('/user-dashboard/profile')} className="hover:bg-gray-200 dark:hover:bg-gray-700 transition dark:text-white">

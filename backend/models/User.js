@@ -95,7 +95,7 @@ const userSchema = new mongoose.Schema(
         }],
         activityAlertThreshold: {
             type: Number,  // in days
-            default: 30    // default alert after 30 days of inactivity
+            default: 21    // default alert after 21 days of inactivity
         }
     },
     { timestamps: true }

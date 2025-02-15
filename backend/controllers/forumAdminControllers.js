@@ -4,9 +4,9 @@ const { createNotification } = require('../controllers/notificationControllers')
 // Get all posts with optional filters
 const getAllPosts = async (req, res) => {
   try {
-    const { flaggedOnly, page = 1, limit = 10 } = req.query;
+    const { flaggedOnly, page = 1, limit = 10, searchQuery } = req.query;
     
-    const query = flaggedOnly === 'true' 
+    let query = flaggedOnly === 'true' 
       ? { 
           $or: [
             { 'flags.status': 'pending' },
@@ -14,7 +14,15 @@ const getAllPosts = async (req, res) => {
           ]
         }
       : {};
-    
+
+    // Add search query to the filter
+    if (searchQuery) {
+      query.$or = [
+        { title: { $regex: searchQuery, $options: 'i' } },
+        { 'author.fullName': { $regex: searchQuery, $options: 'i' } }
+      ];
+    }
+
     const posts = await Post.find(query)
       .populate('author', 'fullName email')
       .populate('comments.userId', 'fullName email')

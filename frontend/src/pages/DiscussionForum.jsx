@@ -21,23 +21,9 @@ const DiscussionForum = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [discussions, setDiscussions] = useState([
     {
-      id: "",
-      title: "",
-      content: "",
-      author: { id: "", name: "", avatar: "" },
-      category: "",
-      tags: ["", "", ""],
-      createdAt: "",
-      likes: 0,
-      replies: [
-        {
-          id: "",
-          content: "",
-          author: { id: "", name: "", avatar: "" },
-          createdAt: "",
-          likes: 0
-        }
-      ]
+      id: "", title: "", content: "", author: { id: "", name: "", avatar: "" },
+      category: "", tags: ["", "", ""], createdAt: "", likes: 0,
+      replies: [{ id: "", content: "", author: { id: "", name: "", avatar: "" }, createdAt: "", likes: 0 }]
     }]);
 
   // Fetch current user
@@ -70,43 +56,51 @@ const DiscussionForum = () => {
   const fetchPosts = async (page = 1, onlyUserPosts = false) => {
     setIsLoading(true);
     try {
-      const url = `/posts?page=${page}&limit=8${
-        onlyUserPosts && currentUser ? `&userId=${currentUser._id}` : ''
-      }&sort=${sortOption}&search=${searchQuery}`;
-      const response = await axiosInstance.get(url);
-      setPosts(response.data.posts);
-      setCurrentPage(response.data.currentPage);
-      setTotalPages(response.data.totalPages);
+        const url = `/posts?page=${page}&limit=8${
+            onlyUserPosts && currentUser ? `&userId=${currentUser._id}` : ''
+        }&sort=${sortOption}&search=${searchQuery}`;
+        
+        const response = await axiosInstance.get(url);
+        
+        // Add some data validation
+        if (response.data?.posts) {
+            setPosts(response.data.posts);
+            setCurrentPage(response.data.currentPage);
+            setTotalPages(Math.ceil(response.data.totalPages));
+        }
     } catch (error) {
-      console.error("Error fetching posts:", error);
-      toast.error("Failed to fetch posts");
+        console.error("Error fetching posts:", error);
+        toast.error("Failed to fetch posts");
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchPosts(currentPage, viewingOwnPosts);
-  }, [currentPage, viewingOwnPosts, currentUser, sortOption, searchQuery]);
+  }, [currentPage, viewingOwnPosts, sortOption, searchQuery]); 
 
   // Handle new post submission
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     try {
-        const formattedTags = newPost.tags.split(',').map(tag => tag.trim());
-        const response = await axiosInstance.post('/posts', {
-            title: newPost.title,
-            content: newPost.content,
-            tags: formattedTags,
-        });
-
-        const createdPost = response.data;
-        setDiscussions([createdPost, ...discussions]);
-        setNewPost({ title: '', content: '', tags: '' });
-        setIsCreatingPost(false);
-        toast.success('Post added successfully');
+      const formattedTags = newPost.tags.split(',').map(tag => tag.trim());
+      const response = await axiosInstance.post('/posts', {
+        title: newPost.title,
+        content: newPost.content,
+        tags: formattedTags,
+      });
+  
+      // Clear the form and close the modal
+      setNewPost({ title: '', content: '', tags: '' });
+      setIsCreatingPost(false);
+      toast.success('Post added successfully');
+  
+      // Fetch the latest posts
+      fetchPosts(currentPage, viewingOwnPosts);
     } catch (error) {
-        console.error("Error creating post:", error);
+      console.error("Error creating post:", error);
+      toast.error("Failed to create post");
     }
   };
 
@@ -360,60 +354,73 @@ const handleLikeToggle = async (postId) => {
 
         {/* New Post Form */}
         {isCreatingPost && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
               <h2 className="text-xl font-bold mb-4">Create New Discussion</h2>
               <form onSubmit={handlePostSubmit}>
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input
-                  type="text"
-                  value={newPost.title}
-                  onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                  className="w-full p-2 border rounded"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Content</label>
-                <textarea
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-                  className="w-full p-2 border rounded"
-                  rows="4"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  value={newPost.tags}
-                  onChange={(e) => setNewPost({...newPost, tags: e.target.value})}
-                  className="w-full p-2 border rounded"
-                  placeholder="e.g., react, javascript, web development"
-                  required
-                />
-              </div>
-              <div className="flex space-x-2">
-                <button 
-                type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                  Post
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingPost(false)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  Cancel
-                </button>
-              </div>
+                {/* Title */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Title</label>
+                  <input
+                    type="text"
+                    value={newPost.title}
+                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter a catchy title for your post"
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">{newPost.title.length}/100 characters</p>
+                </div>
+
+                {/* Content */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Content</label>
+                  <textarea
+                    value={newPost.content}
+                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="4"
+                    placeholder="Share your thoughts or ask a question..."
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">{newPost.content.length}/2000 characters</p>
+                </div>
+
+                {/* Tags */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Tags</label>
+                  <input
+                    type="text"
+                    value={newPost.tags}
+                    onChange={(e) => setNewPost({ ...newPost, tags: e.target.value })}
+                    className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., react, javascript, web development"
+                    required
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Separate tags with commas</p>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingPost(false)}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Post
+                  </button>
+                </div>
               </form>
             </div>
           </div>
-          )}
+        )}
 
-      
         {/* Filter Buttons with improved styling */}
         <div className="flex justify-end gap-4 mb-6">
           <button
@@ -465,9 +472,11 @@ const handleLikeToggle = async (postId) => {
                         className="w-12 h-12 rounded-full border-2 border-gray-100"
                       />
                       <div>
+                      <Link to={`/user-dashboard/forum/${post._id}`}>
                         <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 dark:text-gray-100 transition-colors">
                           {post.title}
                         </h3>
+                      </Link>
                         <div className="flex items-center space-x-2 text-sm text-gray-500">
                           <span className="font-medium">{post.author?.fullName || 'Unknown Author'}</span>
                           <span>•</span>

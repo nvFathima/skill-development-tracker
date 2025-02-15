@@ -9,6 +9,7 @@ const GoalLinkModal = ({ resource, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showNewGoalForm, setShowNewGoalForm] = useState(false);
+  const [skills, setSkills] = useState([]); // State for skills
   
   // New goal form state
   const [newGoal, setNewGoal] = useState({
@@ -16,14 +17,13 @@ const GoalLinkModal = ({ resource, onClose }) => {
     description: '',
     startDate: new Date().toISOString().split('T')[0],
     targetCompletionDate: '',
-    associatedSkills: []
+    associatedSkills: [] // Will contain single skill ID
   });
 
   useEffect(() => {
     const fetchMatchingGoals = async () => {
       try {
         setLoading(true);
-        console.log(resource.id);
         const response = await axiosInstance.get(
           `/goals/matching-resource/${resource.id}?title=${encodeURIComponent(resource.title)}`
         );
@@ -39,49 +39,53 @@ const GoalLinkModal = ({ resource, onClose }) => {
     fetchMatchingGoals();
   }, [resource.id, resource.title]);
 
+  // Fetch skills when form is shown
+  useEffect(() => {
+    const fetchSkills = async () => {
+      if (showNewGoalForm) {
+        try {
+          const response = await axiosInstance.get('/skills');
+          setSkills(response.data);
+        } catch (error) {
+          console.error('Error fetching skills:', error);
+          toast.error('Failed to load skills');
+        }
+      }
+    };
+
+    fetchSkills();
+  }, [showNewGoalForm]);
+
   const handleLinkToExistingGoal = async (goalId) => {
     try {
-        await axiosInstance.post(`/goals/${goalId}/link-resource`, {
-            resourceData: {
-                title: resource.title,
-                platform: resource.platform,
-                link: resource.link,
-                thumbnail: resource.thumbnail,
-                duration: resource.duration
-            }
-        });
-        toast.success('Resource linked to goal successfully');
-        onClose();
-    } catch (error) {
-        console.error('Error linking resource to goal:', error);
-        if (error.response && error.response.status === 400) {
-            toast.error(error.response.data.message); // Display the backend error message
-        } else {
-            toast.error('Failed to link resource to goal');
+      await axiosInstance.post(`/goals/${goalId}/link-resource`, {
+        resourceData: {
+          title: resource.title,
+          platform: resource.platform,
+          link: resource.link,
+          thumbnail: resource.thumbnail,
+          duration: resource.duration
         }
+      });
+      toast.success('Resource linked to goal successfully');
+      onClose();
+    } catch (error) {
+      console.error('Error linking resource to goal:', error);
+      if (error.response && error.response.status === 400) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Failed to link resource to goal');
+      }
     }
   };
 
   const handleCreateNewGoal = async (e) => {
     e.preventDefault();
     try {
-      // First, get matching skills based on the resource title
-      const keywords = resource.title.toLowerCase()
-        .trim()
-        .split(/\s+/)
-        .filter(keyword => keyword.length > 0);
-  
-      const skillResponse = await axiosInstance.get(
-        `/skills/matching?keywords=${encodeURIComponent(keywords.join(','))}`
-      );
-  
-      const matchingSkillIds = skillResponse.data.map(skill => skill._id);
-      
-      // Create the new goal with the matching skills
       const response = await axiosInstance.post('/goals', {
         ...newGoal,
-        associatedSkills: matchingSkillIds, // Add the matching skills
-        resources: [{  // Add the resource as an array element
+        associatedSkills: newGoal.associatedSkills.length ? [newGoal.associatedSkills] : [], // Convert to array for backend
+        resources: [{
           title: resource.title,
           platform: resource.platform,
           link: resource.link,
@@ -96,6 +100,14 @@ const GoalLinkModal = ({ resource, onClose }) => {
       console.error('Error creating new goal:', error);
       toast.error('Failed to create new goal');
     }
+  };
+
+  // Handler for skill selection
+  const handleSkillChange = (e) => {
+    setNewGoal(prev => ({
+      ...prev,
+      associatedSkills: e.target.value // Single skill ID
+    }));
   };
 
   return (
@@ -137,9 +149,7 @@ const GoalLinkModal = ({ resource, onClose }) => {
                               </div>
                               <button
                                 onClick={() => handleLinkToExistingGoal(goal._id)}
-                                className="flex items-center text-blue-600 dark:text-blue-400 
-                                          hover:text-blue-800 dark:hover:text-blue-300 
-                                          transition-all duration-200"
+                                className="flex items-center text-blue-600 hover:text-blue-800 transition-all duration-200"
                               >
                                 <LinkIcon className="w-4 h-4 mr-1" />
                                 Link
@@ -189,6 +199,23 @@ const GoalLinkModal = ({ resource, onClose }) => {
                       value={newGoal.description}
                       onChange={(e) => setNewGoal(prev => ({...prev, description: e.target.value}))}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Associated Skill</label>
+                    <select
+                      className="w-full p-2 border rounded-lg"
+                      value={newGoal.associatedSkills}
+                      onChange={handleSkillChange}
+                      required
+                    >
+                      <option value="">Select a skill</option>
+                      {skills.map(skill => (
+                        <option key={skill._id} value={skill._id}>
+                          {skill.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">

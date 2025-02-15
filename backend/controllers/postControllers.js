@@ -44,59 +44,92 @@ const getPostById = async (req, res) => {
 };
 
 // Get all posts with pagination and user filtering
+// Get all posts with pagination and user filtering
 const getPosts = async (req, res) => {
     try {
         const { skillId, userId, page = 1, limit = 8, sort = 'recent', search = '' } = req.query;
-        let query = {};
+        
+        // Build the aggregation pipeline
+        const pipeline = [];
 
-        // Add search functionality
+        // Match stage for filtering
+        let matchStage = {};
         if (search) {
-            query.$or = [
-            { title: { $regex: search, $options: 'i' } }, // Case-insensitive search in title
-            { tags: { $regex: search, $options: 'i' } }, // Case-insensitive search in tags
+            matchStage.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { tags: { $regex: search, $options: 'i' } },
             ];
         }
-
-        // Add filters to query
         if (skillId) {
-            query.associatedSkills = skillId;
+            matchStage.associatedSkills = skillId;
+        }
+        if (userId) {
+            matchStage.author = userId;
         }
         
-        // Add user filter if userId is provided
-        if (userId) {
-            query.author = userId;
+        if (Object.keys(matchStage).length > 0) {
+            pipeline.push({ $match: matchStage });
         }
 
-        let sortQuery = {};
+        // Add fields for sorting
+        pipeline.push({
+            $addFields: {
+                likesCount: { $size: { $ifNull: ["$likes", []] } },
+                commentsCount: { $size: { $ifNull: ["$comments", []] } }
+            }
+        });
+
+        // Sorting stage
+        let sortStage = {};
         switch (sort) {
-        case 'recent':
-            sortQuery = { createdAt: -1 }; // Sort by most recent
-            break;
-        case 'popular':
-            sortQuery = { likes: -1 }; // Sort by most likes
-            break;
-        case 'commented':
-            sortQuery = { comments: -1 }; // Sort by most comments
-            break;
-        default:
-            sortQuery = { createdAt: -1 };
+            case 'recent':
+                sortStage = { $sort: { createdAt: -1 } };
+                break;
+            case 'popular':
+                sortStage = { $sort: { likesCount: -1, createdAt: -1 } };
+                break;
+            case 'commented':
+                sortStage = { $sort: { commentsCount: -1, createdAt: -1 } };
+                break;
+            default:
+                sortStage = { $sort: { createdAt: -1 } };
         }
+        pipeline.push(sortStage);
 
-        const totalPosts = await Post.countDocuments(query);
-        const posts = await Post.find(query)
-            .populate('author', 'fullName profilePhoto')
-            .sort(sortQuery)
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
+        // Get total count before pagination
+        const totalPosts = await Post.aggregate([...pipeline, { $count: "total" }]);
+        const total = totalPosts[0]?.total || 0;
+
+        // Add pagination
+        pipeline.push(
+            { $skip: (page - 1) * limit },
+            { $limit: parseInt(limit) }
+        );
+
+        // Add author lookup
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'author',
+                foreignField: '_id',
+                pipeline: [
+                    { $project: { fullName: 1, profilePhoto: 1 } }
+                ],
+                as: 'author'
+            }
+        });
+        pipeline.push({ $unwind: '$author' });
+
+        const posts = await Post.aggregate(pipeline);
 
         res.status(200).json({
             posts,
-            totalPosts,
-            totalPages: Math.ceil(totalPosts / limit),
+            totalPosts: total,
+            totalPages: Math.ceil(total / limit),
             currentPage: parseInt(page),
         });
     } catch (error) {
-        console.error("Error fetching posts:", error);
+        console.error("Error fetching posts:", { error, query: req.query });
         res.status(500).json({ 
             message: "Internal server error",
             error: error.message 

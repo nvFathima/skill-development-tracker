@@ -19,10 +19,11 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import ConcernSharing from "./pages/Concerns";
 import ConcernsManagement from "./pages/ConcernsManagement";
 import ResourceDetail from "./pages/ResourceDetail";
-import Navbar from "./components/ui/NavBar";
 import Terms from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 // Protected Layout Component
 function ProtectedLayout() {
@@ -80,10 +81,6 @@ function PublicRoute({ children }) {
 }
 
 function App() {
-  const location = useLocation();
-
-  const showNavbar = location.pathname === "/";
-
   const goalsData = {
     pending: 3,
     inProgress: 5,
@@ -98,8 +95,6 @@ function App() {
 
   return (
       <main className="w-full min-h-screen bg-[#f3f4f6]">
-        {showNavbar && <Navbar />} {/* ✅ Navbar only on Home Page */}
-
         <Routes>
           {/* Landing Page as Default Route */}
           <Route path="/" element={<Home />} />
@@ -108,6 +103,8 @@ function App() {
           <Route path="/log-in" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/terms" element={<PublicRoute><Terms /></PublicRoute>} />
+          <Route path="/about" element={<PublicRoute><About /></PublicRoute>} />
+          <Route path="/contact" element={<PublicRoute><Contact /></PublicRoute>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:userId" element={<ResetPassword />} />
 

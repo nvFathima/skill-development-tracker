@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const cron = require('node-cron');
 const {createNotification } = require('../controllers/notificationControllers');
 
 //to make a user admin
@@ -78,6 +79,14 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// Utility function to check if user needs an activity alert
+const needsActivityAlert = (lastActiveTime, thresholdDays) => {
+  if (!lastActiveTime) return false;
+  const daysSinceActive = Math.floor((Date.now() - lastActiveTime) / (1000 * 60 * 60 * 24));
+  return daysSinceActive >= thresholdDays;
+};
+
+// Enhanced activity alert controller
 const sendActivityAlert = async (req, res) => {
   const { id } = req.params;
   const { message } = req.body;
@@ -86,20 +95,49 @@ const sendActivityAlert = async (req, res) => {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     
-    // Create notification using the notification controller
-    await createNotification(id, message);
+    // Check if alert is actually needed based on threshold
+    if (!needsActivityAlert(user.lastActiveTime, user.activityAlertThreshold)) {
+      return res.status(400).json({ 
+        message: 'Activity alert not needed - user is still within active threshold'
+      });
+    }
+
+    // Create notification
+    await createNotification(id, message || `We noticed you haven't been active for ${user.activityAlertThreshold} days. We'd love to see you back!`);
     
-    res.status(200).json({ message: 'Activity alert sent successfully' });
+    // Update last alert sent time
+    user.lastActivityAlert = Date.now();
+    await user.save();
+    
+    res.status(200).json({ 
+      message: 'Activity alert sent successfully',
+      daysSinceActive: Math.floor((Date.now() - user.lastActiveTime) / (1000 * 60 * 60 * 24))
+    });
   } catch (error) {
     console.error('Error sending activity alert:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
-module.exports = {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser, makeAdmin, sendActivityAlert
+// Automated check for inactive users
+const checkInactiveUsers = async () => {
+  try {
+    const users = await User.find({});
+    
+    for (const user of users) {
+      if (needsActivityAlert(user.lastActiveTime, user.activityAlertThreshold)) {
+        await createNotification(
+          user._id,
+          `We noticed you haven't been active for ${user.activityAlertThreshold} days. We'd love to see you back!`
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Error checking inactive users:', error);
+  }
 };
+
+cron.schedule('0 0 * * *', checkInactiveUsers); // Runs daily at midnight
+
+module.exports = { getAllUsers, getUserById, createUser, updateUser, deleteUser, makeAdmin, sendActivityAlert,
+  checkInactiveUsers, needsActivityAlert };

@@ -51,7 +51,7 @@ const getRecommendedResources = async (req, res) => {
     const resourcePromises = Array.from(searchTerms).map(async term => {
       try {
         const result = await getCachedResources({
-          query: `${term} tutorial`,
+          query: `${term} skill tutorial`,
           maxResults: 50,
           relevanceLanguage: 'en',
           videoDuration: 'medium'

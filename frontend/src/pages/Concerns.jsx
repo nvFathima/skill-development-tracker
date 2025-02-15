@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Search, AlertCircle, Clock, CheckCircle2, HelpCircle, Trash2 } from 'lucide-react';
 import axiosInstance from '../utils/axios';
+import { toast } from 'sonner';
 
 const ConcernSharing = () => {
   const [subject, setSubject] = useState('');
@@ -43,9 +44,6 @@ const ConcernSharing = () => {
 
   const handleSubmitConcern = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-    
     if (!subject.trim() || !message.trim()) {
       setError('Please fill in both subject and message fields');
       return;
@@ -172,7 +170,7 @@ const ConcernSharing = () => {
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full"
+                className="w-full bg-blue-600"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Concern'}
               </Button>

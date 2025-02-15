@@ -6,14 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table";
 import axiosInstance from '../utils/axios';
 import { toast } from 'sonner';
 
@@ -33,7 +26,12 @@ const ForumManagement = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axiosInstance.get(`/admin/posts${showFlagged ? '?flaggedOnly=true' : ''}`);
+      const response = await axiosInstance.get(`/admin/posts`, {
+        params: {
+          flaggedOnly: showFlagged,
+          searchQuery: searchQuery
+        }
+      });
       setPosts(response.data.posts || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -101,16 +99,23 @@ const ForumManagement = () => {
     }
   };
 
+  const getFlagCountsByStatus = (flags) => {
+    return flags.reduce((acc, flag) => {
+      acc[flag.status] = (acc[flag.status] || 0) + 1;
+      return acc;
+    }, {});
+  };
+
   const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     post.author.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Forum Management</CardTitle>
+          <CardTitle className="text-2xl font-bold mb-3">Forum Management</CardTitle>
           <div className="flex gap-4 items-center mt-4">
             <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
@@ -118,14 +123,18 @@ const ForumManagement = () => {
                 placeholder="Search posts..."
                 className="pl-8"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  fetchPosts(); // Trigger fetchPosts when search query changes
+                }}
               />
             </div>
             <Button
-              variant={showFlagged ? "destructive" : "outline"}
+              variant={showFlagged ? "outline" : "destructive"}
+              className={showFlagged ? "bg-blue-500 text-white hover:bg-blue-600" : ""}
               onClick={() => setShowFlagged(!showFlagged)}
             >
-              <Flag className="mr-2 h-4 w-4" />
+              {!showFlagged && <Flag className="mr-2 h-4 w-4" />}
               {showFlagged ? 'Show All' : 'Show Flagged'}
             </Button>
           </div>
@@ -165,9 +174,13 @@ const ForumManagement = () => {
                     <TableCell className="text-center">{post.comments?.length || 0}</TableCell>
                     <TableCell className="text-center">
                       {post.flags?.length > 0 && (
-                        <Badge variant="destructive">
-                          {post.flags.length}
-                        </Badge>
+                        <div className="flex gap-2 justify-center">
+                          {Object.entries(getFlagCountsByStatus(post.flags)).map(([status, count]) => (
+                            <Badge key={status} variant={status === 'pending' ? 'destructive' : 'secondary'}>
+                              {status}: {count}
+                            </Badge>
+                          ))}
+                        </div>
                       )}
                     </TableCell>
                     <TableCell className="text-right">

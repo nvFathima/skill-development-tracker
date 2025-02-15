@@ -27,7 +27,18 @@ const ConcernSchema = new mongoose.Schema({
   resolvedAt: {
     type: Date,
     default: null
-  }
+  },
+  replies: [{
+    message: String,
+    repliedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'users'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 });
 
 module.exports = mongoose.model('concerns', ConcernSchema);

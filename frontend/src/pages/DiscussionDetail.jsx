@@ -294,7 +294,7 @@ const DiscussionDetail = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3 mb-2">
                     <img
-                      src={comment.userId?.profilePhoto || '/default-avatar.png'}
+                      src={comment.userId?.profilePhoto? `http://localhost:8800${comment.userId.profilePhoto}` : '/default-avatar.png'}
                       alt={comment.userId?.fullName}
                       className="w-8 h-8 rounded-full"
                     />

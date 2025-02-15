@@ -1,5 +1,6 @@
 const Concern = require('../models/Concerns');
 const User = require('../models/User'); 
+const {createNotification } = require('../controllers/notificationControllers');
 const mongoose = require('mongoose');
 
 // Create a new concern
@@ -99,17 +100,21 @@ const updateConcernStatus = async (req, res) => {
     const { status } = req.body;
 
     const concern = await Concern.findByIdAndUpdate(
-      concernId, 
-      { 
-        status, 
-        resolvedAt: status === 'Resolved' ? new Date() : null 
+      concernId,
+      {
+        status,
+        resolvedAt: status === 'Resolved' ? new Date() : null,
       },
       { new: true }
-    );
+    ).populate('userId', 'fullName email');
 
     if (!concern) {
       return res.status(404).json({ message: 'Concern not found' });
     }
+
+    // Create a notification for the user
+    const notificationMessage = `Your concern "${concern.subject}" has been updated to "${status}".`;
+    await createNotification(concern.userId._id, notificationMessage);
 
     res.status(200).json(concern);
   } catch (error) {
@@ -118,4 +123,39 @@ const updateConcernStatus = async (req, res) => {
   }
 };
 
-module.exports = { createConcern, getUserConcerns, getAllConcerns, updateConcernStatus, deleteConcern};
+const replyToConcern = async (req, res) => {
+  try {
+    const { concernId } = req.params;
+    const { message } = req.body;
+    const repliedBy = req.user.id; // Admin who is replying
+
+    const concern = await Concern.findByIdAndUpdate(
+      concernId,
+      {
+        $push: {
+          replies: {
+            message,
+            repliedBy,
+            createdAt: new Date(),
+          },
+        },
+      },
+      { new: true }
+    ).populate('userId', 'fullName email');
+
+    if (!concern) {
+      return res.status(404).json({ message: 'Concern not found' });
+    }
+
+    // Create a notification for the user
+    const notificationMessage = `You have a new reply on your concern "${concern.subject}": ${message}`;
+    await createNotification(concern.userId._id, notificationMessage);
+
+    res.status(200).json(concern);
+  } catch (error) {
+    console.error('Error replying to concern:', error);
+    res.status(500).json({ message: 'Failed to reply to concern' });
+  }
+};
+
+module.exports = { createConcern, getUserConcerns, getAllConcerns, updateConcernStatus, deleteConcern, replyToConcern};

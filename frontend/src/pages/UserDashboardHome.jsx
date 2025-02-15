@@ -36,13 +36,16 @@ const UserDashboardHome = () => {
           { name: "Completed", value: data.goalCounts.completed },
         ];
 
+        // Check if all goal values are 0
+        const hasNoGoals = goalData.every((goal) => goal.value === 0);
+
         // Transform skill data for bar chart
         const skillData = data.skillProgress.map((skill) => ({
           name: skill.name,
           progress: skill.progress,
         }));
 
-        setGoalStatusData(goalData);
+        setGoalStatusData(hasNoGoals ? [] : goalData);
         setSkillProgressData(skillData);
       } catch (err) {
         toast.error("Failed to load overview data.");
@@ -187,52 +190,61 @@ const UserDashboardHome = () => {
       )}
 
       {/* Overview Section */}
-      <h2 className="text-2xl font-bold mb-4 dark:text-white">Overview</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Goal Status */}
-        <Card className="shadow-md dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="dark:text-white">Goal Status</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={goalStatusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                  {goalStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-md dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="dark:text-white">Skill Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={skillProgressData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar
-                    dataKey="progress"
-                    fill="#36A2EB"
-                    radius={[5, 5, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+<h2 className="text-2xl font-bold mb-4 dark:text-white">Overview</h2>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {/* Goal Status */}
+  <Card className="shadow-md dark:bg-gray-800">
+    <CardHeader>
+      <CardTitle className="dark:text-white">Goal Status</CardTitle>
+    </CardHeader>
+    <CardContent className="h-[300px] flex items-center justify-center">
+      {goalStatusData.length > 0 ? (
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={goalStatusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+              {goalStatusData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      ) : (
+        <p className="text-gray-500 dark:text-gray-400">No Goals Set</p>
+      )}
+    </CardContent>
+  </Card>
+  
+  {/* Skill Progress */}
+  <Card className="shadow-md dark:bg-gray-800">
+    <CardHeader>
+      <CardTitle className="dark:text-white">Skill Progress</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="h-[300px]">
+        {skillProgressData.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={skillProgressData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis domain={[0, 100]} />
+              <Tooltip />
+              <Legend />
+              <Bar
+                dataKey="progress"
+                fill="#36A2EB"
+                radius={[5, 5, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-gray-500 dark:text-gray-400 flex items-center justify-center h-full">No Skills Found</p>
+        )}
       </div>
+    </CardContent>
+  </Card>
+</div>
     </div>
   );
 };

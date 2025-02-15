@@ -7,19 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { 
   Plus, Trash2,  Award, Target, Upload, User, Briefcase, GraduationCap, 
-  Mail, 
-  Phone, 
-  Building, 
-  MapPin,
-  Pencil,
-  MoreVertical
-} from 'lucide-react';
+  Mail, Phone, Building, MapPin, Pencil, MoreVertical } from 'lucide-react';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/DropdownMenu";
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,DropdownMenuTrigger, } from "@/components/ui/DropdownMenu";
 
 const Profile = () => {
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -55,47 +45,50 @@ const Profile = () => {
   const handlePhotoChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
+  
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
     }
-
+  
     // Validate file size (e.g., 5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('File size should be less than 5MB');
       return;
     }
-
+  
     try {
       setUploading(true);
-
+  
       // Create preview
       const reader = new FileReader();
       reader.onload = () => {
         setPhotoPreview(reader.result);
       };
       reader.readAsDataURL(file);
-
+  
       // Create FormData
       const formData = new FormData();
       formData.append('photo', file);
-
+  
       // Upload photo
       const response = await axiosInstance.post('/profile/photo', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-
+  
       // Update profile with new photo URL
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
-        profilePhoto: response.data.photoUrl
+        profilePhoto: response.data.photoUrl,
       }));
-
+  
       toast.success('Profile photo updated successfully!');
+  
+      // Refresh the page to reflect changes
+      window.location.reload();
     } catch (error) {
       console.error('Error uploading photo:', error);
       toast.error('Failed to upload profile photo');
@@ -108,12 +101,15 @@ const Profile = () => {
   const removePhoto = async () => {
     try {
       await axiosInstance.delete('/profile/photo');
-      setProfile(prev => ({
+      setProfile((prev) => ({
         ...prev,
-        profilePhoto: ''
+        profilePhoto: '',
       }));
       setPhotoPreview(null);
       toast.success('Profile photo removed');
+  
+      // Refresh the page to reflect changes
+      window.location.reload();
     } catch (error) {
       console.error('Error removing photo:', error);
       toast.error('Failed to remove profile photo');
@@ -192,8 +188,8 @@ const Profile = () => {
                 <Pencil className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={handlePhotoClick} className="cursor-pointer">
+            <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-gray-800">
+              <DropdownMenuItem onClick={handlePhotoClick} className="cursor-pointer dark:text-gray-300">
                 <Upload className="w-4 h-4 mr-2" />
                 {profile.profilePhoto ? 'Change Photo' : 'Upload Photo'}
               </DropdownMenuItem>
@@ -210,11 +206,7 @@ const Profile = () => {
           </DropdownMenu>
 
           <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePhotoChange}
+            ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange}
           />
         </div>
         
@@ -293,8 +285,7 @@ const Profile = () => {
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Full Name</label>
           <Input
-            placeholder="Enter your full name"
-            value={profile.fullName}
+            placeholder="Enter your full name" value={profile.fullName}
             onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
             className="hover:border-blue-400 focus:border-blue-500"
           />
@@ -302,9 +293,7 @@ const Profile = () => {
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Age</label>
           <Input
-            type="number"
-            placeholder="Enter your age"
-            value={profile.age}
+            type="number" placeholder="Enter your age" value={profile.age}
             onChange={(e) => setProfile({ ...profile, age: e.target.value })}
             className="hover:border-blue-400 focus:border-blue-500"
           />
@@ -312,8 +301,7 @@ const Profile = () => {
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Phone Number</label>
           <Input
-            placeholder="Enter your phone number"
-            value={profile.phone}
+            placeholder="Enter your phone number" value={profile.phone}
             onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
             className="hover:border-blue-400 focus:border-blue-500"
           />
@@ -321,8 +309,7 @@ const Profile = () => {
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Alternate Email</label>
           <Input
-            placeholder="Enter alternate email (optional)"
-            value={profile.alternateEmail}
+            placeholder="Enter alternate email (optional)" value={profile.alternateEmail}
             onChange={(e) => setProfile({ ...profile, alternateEmail: e.target.value })}
             className="hover:border-blue-400 focus:border-blue-500"
           />
@@ -392,8 +379,7 @@ const Profile = () => {
                   Job Title
                 </label>
                 <Input
-                  placeholder="Enter job title"
-                  value={profile.employmentDetails.currentJob?.title || ""}
+                  placeholder="Enter job title" value={profile.employmentDetails.currentJob?.title || ""}
                   onChange={(e) =>
                     setProfile((prev) => ({
                       ...prev,
@@ -419,8 +405,7 @@ const Profile = () => {
               <label className="text-sm font-medium text-gray-700">Preferred Jobs</label>
               <div className="flex items-center gap-2">
                 <Input
-                  placeholder="Enter preferred job title"
-                  value={newPreferredJob}
+                  placeholder="Enter preferred job title" value={newPreferredJob}
                   onChange={(e) => setNewPreferredJob(e.target.value)}
                   className="hover:border-blue-400 focus:border-blue-500"
                 />
@@ -456,8 +441,7 @@ const Profile = () => {
                 >
                   <span className="text-gray-700">{job}</span>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="ghost" size="sm"
                     onClick={() =>
                       setProfile((prev) => ({
                         ...prev,
@@ -496,8 +480,7 @@ const Profile = () => {
             <div className="flex justify-between items-center">
               <h4 className="font-semibold text-gray-700 dark:text-gray-300">Education Entry {index + 1}</h4>
               <Button
-                variant="ghost"
-                size="sm"
+                variant="ghost" size="sm"
                 onClick={() => {
                   const updatedEducation = profile.education.filter(
                     (_, eduIndex) => eduIndex !== index
@@ -516,14 +499,12 @@ const Profile = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700 dark:text-gray-400">Degree</label>
                 <Input
-                  placeholder="Enter your degree"
-                  value={edu.degree || ""}
+                  placeholder="Enter your degree" value={edu.degree || ""}
                   onChange={(e) => {
                     const updatedEducation = [...profile.education];
                     updatedEducation[index].degree = e.target.value;
                     setProfile((prev) => ({
-                      ...prev,
-                      education: updatedEducation,
+                      ...prev, education: updatedEducation,
                     }));
                   }}
                   className="hover:border-blue-400 focus:border-blue-500"
